@@ -5,6 +5,14 @@ Python app for labelling ECG text files exported from the BARD EP system
 
 This program is at its VERY early infancy. It can currently label text files but I haven't yet coded the ability to export the data in batches.
 
+## Requirements
+
+* PyQt5
+* Pandas
+* SciPy
+* pywt (conda install pywavelets)
+* Statsmodels (conda install -c statsmodels statsmodels)
+
 ## Reporting cases
 
 First, place all the exported *.txt files for specific case in specific subfolder within the "./data/" directory, e.g. "./data/case1/", then select that folder using the 'load patient' icon in the top left corner.
