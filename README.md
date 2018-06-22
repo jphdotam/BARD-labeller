@@ -1,6 +1,8 @@
 # BARD-labeller
 Python app for labelling ECG text files exported from the BARD EP system
 
+With thanks to Dr Ahran Arnold, Ben Cullin and Rohin Reddy.
+
 ## About
 
 This program is at its VERY early infancy. It can currently label text files but I haven't yet coded the ability to export the data in batches.
