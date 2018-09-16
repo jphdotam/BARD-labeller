@@ -1,11 +1,13 @@
 # BARD-labeller
-Python app for labelling ECG text files exported from the BARD EP system
+Python app for labelling ECG text files exported from the BARD EP system.
+Labelling is done with simple drag & drop.
+Able to export specific segments of an ECG to python numpy files in batches.
 
 With thanks to Dr Ahran Arnold, Ben Cullin and Rohin Reddy.
 
 ## About
 
-This program is at its VERY early infancy. It can currently label text files but I haven't yet coded the ability to export the data in batches.
+This program is poorly documented because I am a terrible person. I apologise but very happy to answer any questions if you email me at james@jph.am
 
 ## Requirements
 
@@ -14,6 +16,11 @@ This program is at its VERY early infancy. It can currently label text files but
 * SciPy
 * pywt (conda install pywavelets)
 * Statsmodels (conda install -c statsmodels statsmodels)
+
+## Running the program
+
+Just run main.py from the root and you'll be greeted with:
+![welcome screen](http://i.imgur.com/VmDWRSt.jpg)
 
 ## Reporting cases
 
@@ -40,9 +47,62 @@ To delete labels, double-click their entry in the labels tables visible on the r
 
 ## Exporting cases
 
-This doesn't work yet!
+When you first choose to export, you'll be forced to select a folder under which all the labelled data exist. It doesn't matter if they're nested. The window will initially appear blank, until you choose a case type to filter and click the filter button in the bottom left. You should then get a view of all of the valid files, like below:
 
-However, the data are easily accessible. The patient-level data (ID, procedure date and type) are stored in a pickle file "patientdata.pickle" in the case directory as a dictionary of format `{"id": patient_id, "date": procedure_date, "proceduretype": procedure_type}`.
+![export example](https://i.imgur.com/kacCGb7.png)
 
-Labels of files as similarly stored as pickles, and the example from the file above would be stored as <filename>.label and when read would yield:
-`{'ranges': [{'type': 'sinus qrs', 'from': 7740.997212822703, 'to': 7824.136764773928}, {'type': 'sinus pwave', 'from': 7619.853033131245, 'to': 7704.575151408585}, {'type': 'rr', 'from': 6022.301053574819, 'to': 6850.871178542038}], 'markers': [{'type': 'deltawave end', 'location': 7755.115319117976}]}`
+You will then be able to export a dataset using the export option on the right.
+
+Note:
+
+* Ensure the correct 'start' and 'stop' options are selected on the left. To export a whole labelled cardiac cycle for every study where it is present, you would choose 'rr START' to 'rr STOP', whereas to export a sinus QRS-T segment you would choose 'sinus pwave START' to 'sinus pwave STOP'.
+
+* After clicking filter, it will tell you how many valid studies will be exported. You can choose to export all of these, or exclude 1% or 5% of the outliers (judged by duration) by choosing the '99%' or '95%' export range options'. This allows you to easily exclude cases which may well be errors, or whose inclusion could result in you greatly increasing your sequence length at the expense of only a couple of cases.
+
+* Export buffer can be a positive or negative integer which allows you to add on or take off a number of datapoints from each cycle, e.g. to ensure you have an isoelectric line before your QRS, or after your T wave, if you chose that section to export.
+
+Exported files are exported as numpy arrays which can be easily read into python, nested in an identical directory structure to the import dataseries, to the 'exports' folder within the program directory:
+
+![exported files](https://i.imgur.com/p11JMeM.png)
+
+## Processing exported cases
+
+I image users would have their own ways of associating labels with the exported numpy files, e.g. depending on whether they want to perform classification or segmentation taks.
+
+However, the `DataSeries` class can be used to load a directory of exports, e.g. as follows:
+
+```python
+dataseries = DataSeries(path="../../exports/ap_qrs_all",
+                        labelfunction=DataSeries.get_labels_by_case_ap_left_right,
+                        caselabels="C:\\Users\\James\\Box\\CLAIM-Data\\CLAIM-AP\\test.xlsx",
+                        classes=('L','R'),
+                        include_only=("NN2",1))
+```
+                        
+The DataSeries class has lots of (poorly documented) features, but this example would:
+
+* Load all npy files under the "aps_qrs_all" folder
+* Load the file 'test.xlsx' and use the supplied `labelfunction` to load labels from it. The example here uses the `LeftVsRight` column to assign the labels from the `classes` options, only including cases where the `NN2` column is equal to 1.
+* Save the labels to the DataSeries.caselabels dictionary, where the key is the `Case ID` column and the value is the numpy array.
+
+This can then easily be used to e.g. fit a neural network, in the following manner, using 4-fold cross-validation:
+
+```python
+for fold in range(4):
+    (train_x, train_y, train_n, train_caseids),\
+    (test_x, test_y, test_n, test_caseids) = dataseries.get_train_test_data(reverse=True, fold_num=fold,
+                                                                            downsample_ratio=downsample_ratio)
+
+    seq_length = train_x.shape[1]
+    input_channels = train_x.shape[2]
+
+    if fold == 0:
+        print(f"Train: {train_x.shape} from {train_n} cases")
+        print(f"Test: {test_x.shape} from {test_n} cases")
+
+    # Load your e.g. keras model of choice
+    
+    model.fit(train_x, train_y, batch_size=32, epochs=10, validation_data=(test_x, test_y))
+```
+                        
+
