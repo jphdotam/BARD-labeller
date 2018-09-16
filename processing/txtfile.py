@@ -10,12 +10,12 @@ import numpy as np
 
 
 class TxtFile:
-    def __init__(self, filepath):
+    def __init__(self, filepath, verbose=False):
         self.filepath = filepath
         self.labelpath = filepath + '.label'
         self.channels, self.sample_freq, self.data = self.load_file()
         self.labels = self.load_labels()
-        print("Channels: {}".format(self.channels))
+        if verbose: print("Channels: {}".format(self.channels))
 
     def load_file(self):
         with open(self.filepath) as f:

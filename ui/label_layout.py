@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './label.ui'
+# Form implementation generated from reading ui file '.\label.ui'
 #
 # Created by: PyQt5 UI code generator 5.6
 #
@@ -185,11 +185,6 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.comboBox_ProcedureType.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-        qtRectangle = MainWindow.frameGeometry()
-        centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
-        qtRectangle.moveCenter(centerPoint)
-        MainWindow.move(qtRectangle.topLeft())
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
