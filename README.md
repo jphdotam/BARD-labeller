@@ -31,6 +31,7 @@ This program comes with labelling protocols for 3 types of studies:
 1) Accessory pathway ablations
 2) Ventricular ectopy ablations
 3) AVNRT ablations
+
 To add more protocols, edit the "./settings/settings.py" file, which should be fairly self-explanatory.
 
 Third, select the text file you wish to label using the 'file selector' drop down box.
